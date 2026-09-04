@@ -1,21 +1,34 @@
-# 老计聊SRE 实验环境
+# sre-aws-lab
 
-贯穿《老计聊SRE》全系列的示例应用和基础设施。一台 t3.micro 上跑一个极简 FastAPI 服务,作为 SRE 各概念(SLI/SLO/告警/复盘等)的实验对象。
+《老计聊SRE》系列的配套实验环境。一台 AWS t3.micro 上跑一个极简 FastAPI 服务,作为 SRE 各个概念(SLI、SLO、错误预算、告警、复盘、容量等)的统一实验对象。文章里的每一个数字,都来自对这个服务的真实压测。
 
-## 目录
+> 配套技术专栏：老计聊SRE(CSDN)。这个仓库是"教具",讲透 SRE 方法论才是主线。
+
+## 设计理念
+
+- **同一个实验对象**：整个系列围绕这一个示例应用展开,读者能看到同一个系统的可靠性怎么被一步步建立起来。
+- **真实数据说话**：不编造数字。文章里的可用性、延迟分位、错误率等,都是脚本对真实服务压测跑出来的。
+- **可控故障**：应用内置可调的延迟和错误率端点,方便演示各种"服务变差"的场景。
+- **低成本可复现**：t3.micro 基本在免费额度内,用完 `terraform destroy` 即清理。
+
+## 目录结构
 
 ```text
 sre-aws-lab/
 ├── app/
-│   ├── main.py            FastAPI 示例应用
+│   ├── main.py                     FastAPI 示例应用
 │   └── requirements.txt
-├── scripts/               SLI 压测与数据采集脚本
-└── terraform/
-    ├── main.tf            t3.micro + 安全组 + 开机部署应用
-    ├── variables.tf
-    ├── outputs.tf
-    ├── terraform.tfvars.example
-    └── .gitignore
+├── scripts/
+│   ├── measure-sli.sh              发混合流量,算可用性/错误率/延迟分位
+│   ├── collect-sli-dataset.sh      采集第一批 SLI 数据
+│   └── collect-sli-dataset2.sh     采集第二批(三档健康度等)
+├── terraform/
+│   ├── main.tf                     t3.micro + 安全组 + 开机部署应用
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfvars.example
+│   └── .gitignore
+└── experiment-run-log.md           完整实验记录与采集到的原始数据
 ```
 
 ## 示例应用端点
@@ -30,26 +43,59 @@ sre-aws-lab/
 
 `/slow` 和 `/flaky` 是为教学演示故意做的可控端点,不是生产做法。
 
-## 使用
+## 文章与实验的对应关系
+
+| 篇号 | 主题 | 用到的实验 / 数据 |
+|------|------|------------------|
+| 01 | SRE 是什么 | 用本仓库的示例应用作为全系列实验对象 |
+| 02 | SLI | `measure-sli.sh` 压测:可用性 96.40%、平均延迟 39ms 但 P95 达 302ms |
+| 03 | SLO | 三档健康度数据:可用性 99.60% / 97.80% / 93.80%,对照 SLO 判定达标与违约 |
+| 04 | 错误预算 | 稳态错误率基线 0.10%(数据已采) |
+| 05 / 07 | 告警 / 复盘 | 故障时间线:正常 0.33% → 故障 12% → 恢复 0% |
+| 08 | 健康检查 | 自愈验证:systemd `Restart=always`,MTTR < 1s |
+| 09 | 容量 | 过载拐点:吞吐平台约 185 req/s |
+
+原始数据与采集过程见 [`experiment-run-log.md`](experiment-run-log.md)。
+
+## 快速上手
+
+前置:已安装 Terraform、配好 AWS 凭证、有一台可用的 AWS 账号。
 
 ```bash
 cd terraform
-cp terraform.tfvars.example terraform.tfvars   # 填入你的IP
+cp terraform.tfvars.example terraform.tfvars   # 填入你的公网IP(用于放行SSH和应用端口)
 terraform init
 terraform plan
 terraform apply
 ```
 
-输出里有 `app_url`,在本地浏览器打开即可访问示例应用。
+apply 完成后,输出里的 `app_url` 就是示例应用地址,本地浏览器打开即可访问。
 
-SSH(从跳板机):`ssh ubuntu@<public_ip>`,开机脚本部署完成的标志是 `/var/log/sre-demo-userdata-done`。
+跑一次 SLI 压测:
+
+```bash
+BASE_URL=<app_url> bash scripts/measure-sli.sh
+```
+
+SSH 登录(排查用):`ssh ubuntu@<public_ip>`。开机脚本部署完成的标志是文件 `/var/log/sre-demo-userdata-done` 存在。
+
+用完清理:
+
+```bash
+cd terraform
+terraform destroy
+```
 
 ## 安全说明
 
-- SSH 端口(22)只放行跳板机和本地 IP;应用端口(8000)只放行能开浏览器的本地 IP。均不对全网开放。
-- `terraform.tfvars`(含个人IP)、`terraform.tfstate` 已在 `.gitignore` 中排除,不提交。
+- SSH 端口(22)只放行你指定的 IP;应用端口(8000)只放行能开浏览器的本地 IP。均不对全网开放。
+- `terraform.tfvars`(含个人 IP)、`terraform.tfstate`、`.terraform/` 均已在 `.gitignore` 中排除,不会进仓库。本仓库不含任何真实 IP、密钥或账号信息。
 
 ## 成本
 
-- t3.micro 在 AWS 免费额度内(每月750小时);超出后约 $0.0104/小时。
-- 系列做完可 `terraform destroy` 释放;成本极低也可长期保留。
+- t3.micro 在 AWS 免费额度内(每月 750 小时);超出后约 $0.0104/小时。
+- 系列做完可 `terraform destroy` 释放;成本极低,也可长期保留。
+
+## License
+
+MIT
