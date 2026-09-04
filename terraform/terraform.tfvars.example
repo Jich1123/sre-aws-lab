@@ -1,0 +1,8 @@
+# 复制为 terraform.tfvars 并填入你自己的值(terraform.tfvars 不提交,含个人IP)
+# 查询本地公网IP: curl -s https://checkip.amazonaws.com
+
+# SSH 来源:跳板机(47.93.54.35)+ 本地电脑
+allowed_ssh_cidrs   = ["JUMP_HOST_IP/32", "YOUR_LOCAL_IP/32"]
+# Web(8000)来源:能开浏览器的本地电脑
+allowed_web_cidrs   = ["YOUR_LOCAL_IP/32"]
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
