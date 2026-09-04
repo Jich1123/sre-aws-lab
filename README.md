@@ -15,20 +15,20 @@
 
 ```text
 sre-aws-lab/
-├── app/
-│   ├── main.py                     FastAPI 示例应用
-│   └── requirements.txt
-├── scripts/
-│   ├── measure-sli.sh              发混合流量,算可用性/错误率/延迟分位
-│   ├── collect-sli-dataset.sh      采集第一批 SLI 数据
-│   └── collect-sli-dataset2.sh     采集第二批(三档健康度等)
-├── terraform/
-│   ├── main.tf                     t3.micro + 安全组 + 开机部署应用
-│   ├── variables.tf
-│   ├── outputs.tf
-│   ├── terraform.tfvars.example
-│   └── .gitignore
-└── experiment-run-log.md           完整实验记录与采集到的原始数据
+  app/
+    main.py                     FastAPI 示例应用
+    requirements.txt
+  scripts/
+    measure-sli.sh              发混合流量,算可用性/错误率/延迟分位
+    collect-sli-dataset.sh      采集第一批 SLI 数据
+    collect-sli-dataset2.sh     采集第二批(三档健康度等)
+  terraform/
+    main.tf                     t3.micro + 安全组 + 开机部署应用
+    variables.tf
+    outputs.tf
+    terraform.tfvars.example
+    .gitignore
+  experiment-run-log.md         完整实验记录与采集到的原始数据
 ```
 
 ## 示例应用端点
@@ -51,7 +51,7 @@ sre-aws-lab/
 | 02 | SLI | `measure-sli.sh` 压测:可用性 96.40%、平均延迟 39ms 但 P95 达 302ms |
 | 03 | SLO | 三档健康度数据:可用性 99.60% / 97.80% / 93.80%,对照 SLO 判定达标与违约 |
 | 04 | 错误预算 | 稳态错误率基线 0.10%(数据已采) |
-| 05 / 07 | 告警 / 复盘 | 故障时间线:正常 0.33% → 故障 12% → 恢复 0% |
+| 05 / 07 | 告警 / 复盘 | 故障时间线:正常 0.33% 到 故障 12% 再到 恢复 0% |
 | 08 | 健康检查 | 自愈验证:systemd `Restart=always`,MTTR < 1s |
 | 09 | 容量 | 过载拐点:吞吐平台约 185 req/s |
 
