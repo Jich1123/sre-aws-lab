@@ -1,0 +1,34 @@
+{
+  "description": "laoji-sre 11 chaos: inject CPU stress on the demo instance to test steady state",
+  "roleArn": "REPLACE_WITH_FIS_ROLE_ARN",
+  "stopConditions": [
+    { "source": "none" }
+  ],
+  "targets": {
+    "demoInstance": {
+      "resourceType": "aws:ec2:instance",
+      "resourceTags": {
+        "Project": "laoji-sre-lab"
+      },
+      "selectionMode": "ALL"
+    }
+  },
+  "actions": {
+    "cpuStress": {
+      "actionId": "aws:ssm:send-command",
+      "description": "Run CPU stress via SSM for 120s to see SLI impact",
+      "parameters": {
+        "documentArn": "arn:aws:ssm:REGION::document/AWSFIS-Run-CPU-Stress",
+        "documentParameters": "{\"DurationSeconds\":\"120\",\"CPU\":\"0\"}",
+        "duration": "PT2M"
+      },
+      "targets": {
+        "Instances": "demoInstance"
+      }
+    }
+  },
+  "tags": {
+    "Name": "laoji-sre-chaos-cpu",
+    "Project": "laoji-sre-lab"
+  }
+}

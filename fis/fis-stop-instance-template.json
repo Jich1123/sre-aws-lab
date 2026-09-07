@@ -1,0 +1,32 @@
+{
+  "description": "laoji-sre 11 chaos: stop the demo instance to test self-healing and steady state",
+  "roleArn": "REPLACE_WITH_FIS_ROLE_ARN",
+  "stopConditions": [
+    { "source": "none" }
+  ],
+  "targets": {
+    "demoInstance": {
+      "resourceType": "aws:ec2:instance",
+      "resourceTags": {
+        "Project": "laoji-sre-lab"
+      },
+      "selectionMode": "ALL"
+    }
+  },
+  "actions": {
+    "stopInstance": {
+      "actionId": "aws:ec2:stop-instances",
+      "description": "Stop the demo instance for a short period to observe SLI impact and recovery",
+      "parameters": {
+        "startInstancesAfterDuration": "PT2M"
+      },
+      "targets": {
+        "Instances": "demoInstance"
+      }
+    }
+  },
+  "tags": {
+    "Name": "laoji-sre-chaos-stop",
+    "Project": "laoji-sre-lab"
+  }
+}

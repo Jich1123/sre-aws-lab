@@ -16,19 +16,30 @@
 ```text
 sre-aws-lab/
   app/
-    main.py                     FastAPI 示例应用
+    main.py                          FastAPI 示例应用(v1 正常版)
+    main_v2.py                       坏版本(第10篇金丝雀用,/work 按概率500)
     requirements.txt
   scripts/
-    measure-sli.sh              发混合流量,算可用性/错误率/延迟分位
-    collect-sli-dataset.sh      采集第一批 SLI 数据
-    collect-sli-dataset2.sh     采集第二批(三档健康度等)
+    measure-sli.sh                   发混合流量,算可用性/错误率/延迟分位
+    collect-sli-dataset.sh           采集第一批 SLI 数据
+    collect-sli-dataset2.sh          采集第二批(三档健康度等)
+    06-create-alarm.sh               建 SNS + 基于错误率的 CloudWatch 告警
+    06-report-error-rate.sh          上报错误率到 CloudWatch 自定义指标
+    10-start-two-versions.sh         并行启动 v1(8000) 和 v2(8001)
+    10-canary-compare.sh             对比 v1/v2 的错误率(金丝雀)
+    11-run-fis.sh                    建 FIS 角色并启动混沌实验
+    11-collect.sh                    混沌实验 before/during/after 三段采 SLI
+  fis/
+    fis-trust-policy.json            FIS 执行角色信任策略
+    fis-stop-instance-template.json  FIS 停实例模板(首选,无 SSM 依赖)
+    fis-cpu-stress-template.json     FIS CPU 压力模板(备选,需 SSM)
   terraform/
-    main.tf                     t3.micro + 安全组 + 开机部署应用
+    main.tf                          t3.micro + 安全组 + 开机部署应用
     variables.tf
     outputs.tf
     terraform.tfvars.example
     .gitignore
-  experiment-run-log.md         完整实验记录与采集到的原始数据
+  experiment-run-log.md              完整实验记录与采集到的原始数据
 ```
 
 ## 示例应用端点
