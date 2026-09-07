@@ -26,7 +26,8 @@ sre-aws-lab/
     06-create-alarm.sh               建 SNS + 基于错误率的 CloudWatch 告警
     06-report-error-rate.sh          上报错误率到 CloudWatch 自定义指标
     10-start-two-versions.sh         并行启动 v1(8000) 和 v2(8001)
-    10-canary-compare.sh             对比 v1/v2 的错误率(金丝雀)
+    10-canary-route.sh               按权重分流 v1/v2 做金丝雀,回滚设权重0
+    10-canary-compare.sh             直接分别压 v1/v2 对比错误率
     11-run-fis.sh                    建 FIS 角色并启动混沌实验
     11-collect.sh                    混沌实验 before/during/after 三段采 SLI
   fis/
